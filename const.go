@@ -1,0 +1,108 @@
+package spice
+
+import "fmt"
+
+const (
+	SPICE_VERSION_MAJOR = 2
+	SPICE_VERSION_MINOR = 2
+
+	SPICE_TICKET_PUBKEY_BYTES = 162 // bytes needed to store 1024bits RSA key in PKIX format
+
+	SPICE_WARN_GENERAL = 0
+	SPICE_INFO_GENERAL = 0
+
+	SPICE_MAGIC = "REDQ" // magic bytes. can feel the redhat
+
+	// common messages
+	SPICE_MSG_MIGRATE           = 1
+	SPICE_MSG_MIGRATE_DATA      = 2
+	SPICE_MSG_SET_ACK           = 3
+	SPICE_MSG_PING              = 4
+	SPICE_MSG_WAIT_FOR_CHANNELS = 5
+	SPICE_MSG_DISCONNECTING     = 6
+	SPICE_MSG_NOTIFY            = 7
+
+	SPICE_MSG_FIRST_AVAIL = 101
+
+	//
+	SPICE_MSGC_ACK_SYNC           = 1
+	SPICE_MSGC_ACK                = 2
+	SPICE_MSGC_PONG               = 3
+	SPICE_MSGC_MIGRATE_FLUSH_MARK = 4
+	SPICE_MSGC_MIGRATE_DATA       = 5
+	SPICE_MSGC_DISCONNECTING      = 6
+
+	SPICE_MSGC_FIRST_AVAIL = 101
+
+	SPICE_MOUSE_MODE_SERVER = 1
+	SPICE_MOUSE_MODE_CLIENT = 2
+
+	SPICE_COMMON_CAP_PROTOCOL_AUTH_SELECTION = 0
+	SPICE_COMMON_CAP_AUTH_SPICE              = 1
+	SPICE_COMMON_CAP_AUTH_SASL               = 2
+	SPICE_COMMON_CAP_MINI_HEADER             = 3
+)
+
+type LzImageType uint32
+
+const (
+	LZ_IMAGE_TYPE_INVALID LzImageType = iota
+	LZ_IMAGE_TYPE_PLT1_LE
+	LZ_IMAGE_TYPE_PLT1_BE // PLT stands for palette
+	LZ_IMAGE_TYPE_PLT4_LE
+	LZ_IMAGE_TYPE_PLT4_BE
+	LZ_IMAGE_TYPE_PLT8
+	LZ_IMAGE_TYPE_RGB16
+	LZ_IMAGE_TYPE_RGB24
+	LZ_IMAGE_TYPE_RGB32
+	LZ_IMAGE_TYPE_RGBA
+	LZ_IMAGE_TYPE_XXXA
+	LZ_IMAGE_TYPE_A8
+)
+
+type BitmapImageType uint8
+
+const (
+	BITMAP_IMAGE_TYPE_INVALID BitmapImageType = iota
+	BITMAP_IMAGE_TYPE_1BIT_LE
+	BITMAP_IMAGE_TYPE_1BIT_BE
+	BITMAP_IMAGE_TYPE_4BIT_LE
+	BITMAP_IMAGE_TYPE_4BIT_BE
+	BITMAP_IMAGE_TYPE_8BIT
+	BITMAP_IMAGE_TYPE_16BIT
+	BITMAP_IMAGE_TYPE_24BIT
+	BITMAP_IMAGE_TYPE_32BIT
+	BITMAP_IMAGE_TYPE_RGBA
+	BITMAP_IMAGE_TYPE_8BIT_A
+)
+
+func (t LzImageType) String() string {
+	switch t {
+	case LZ_IMAGE_TYPE_INVALID:
+		return "INVALID"
+	case LZ_IMAGE_TYPE_PLT1_LE:
+		return "PLT1_LE"
+	case LZ_IMAGE_TYPE_PLT1_BE:
+		return "PLT1_BE"
+	case LZ_IMAGE_TYPE_PLT4_LE:
+		return "PLT4_LE"
+	case LZ_IMAGE_TYPE_PLT4_BE:
+		return "PLT4_BE"
+	case LZ_IMAGE_TYPE_PLT8:
+		return "PLT8"
+	case LZ_IMAGE_TYPE_RGB16:
+		return "RGB16"
+	case LZ_IMAGE_TYPE_RGB24:
+		return "RGB24"
+	case LZ_IMAGE_TYPE_RGB32:
+		return "RGB32"
+	case LZ_IMAGE_TYPE_RGBA:
+		return "RGBA"
+	case LZ_IMAGE_TYPE_XXXA:
+		return "XXXA"
+	case LZ_IMAGE_TYPE_A8:
+		return "A8"
+	default:
+		return fmt.Sprintf("LzImageType(%d)", t)
+	}
+}
