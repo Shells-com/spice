@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/KarpelesLab/static-portaudio/portaudio"
+	"github.com/gordonklaus/portaudio"
 )
 
 type timeBufferFragment struct {

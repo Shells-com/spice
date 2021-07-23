@@ -4,6 +4,10 @@ github.com/KarpelesLab/static-portaudio v0.4.190600 h1:y+wZ2jHuxklHUzjet9lq3Tv/0
 github.com/KarpelesLab/static-portaudio v0.4.190600/go.mod h1:gJo/PfziOxbetHg+KzbgFMZeKy57tGRrsuwqfOtQ5/c=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/gordonklaus/portaudio v0.0.0-20200911161147-bb74aa485641 h1:B7ADnac3Yy6Vtcp2mstnsjUtarYcjy4AL0R6eNEhZAk=
+github.com/gordonklaus/portaudio v0.0.0-20200911161147-bb74aa485641/go.mod h1:HfYnZi/ARQKG0dwH5HNDmPCHdLiFiBf+SI7DbhW7et4=
+github.com/hraban/opus v0.0.0-20210415224706-ab1467d63813 h1:kJ//kFxpLIkSAqPzCwrEFWXKxnR9/TqL2+ViyBeLKJc=
+github.com/hraban/opus v0.0.0-20210415224706-ab1467d63813/go.mod h1:YQQXrWHN3JEvCtw5ImyTCcPeU/ZLo/YMA+TpB64XdrU=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
