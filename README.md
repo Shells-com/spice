@@ -1,3 +1,5 @@
+[![GoDoc](https://godoc.org/github.com/Shells-com/spice?status.svg)](https://godoc.org/github.com/Shells-com/spice)
+
 # Spice
 
 Spice protocol is a kind of remote control protocol commonly used with libvirt
