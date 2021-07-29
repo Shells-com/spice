@@ -26,12 +26,11 @@ func DecodeImage(buf []byte) (*Image, error) {
 	i := &Image{}
 
 	// read header (18 bytes)
-	r := bytes.NewReader(buf)
-	binary.Read(r, binary.LittleEndian, &i.ID)
-	binary.Read(r, binary.LittleEndian, &i.Type)
-	binary.Read(r, binary.LittleEndian, &i.Flags)
-	binary.Read(r, binary.LittleEndian, &i.Width)
-	binary.Read(r, binary.LittleEndian, &i.Height)
+	i.ID = binary.LittleEndian.Uint64(buf[:8])
+	i.Type = buf[9]
+	i.Flags = buf[10]
+	i.Width = binary.LittleEndian.Uint32(buf[10:14])
+	i.Height = binary.LittleEndian.Uint32(buf[14:18])
 
 	//log.Printf("decode spice img %dx%d id=%d typ=%d flags=%d", i.Width, i.Height, i.ID, i.Type, i.Flags)
 
