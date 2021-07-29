@@ -92,6 +92,7 @@ func (d *ChPlayback) handle(typ uint16, data []byte) {
 				log.Printf("spice/playback: failed to decode Opus data: %s", err)
 				return
 			}
+
 			pcm = pcm[:n*int(d.channels)]
 			// send
 			d.w.Append(tim, pcm)

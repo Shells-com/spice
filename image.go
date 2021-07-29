@@ -32,8 +32,8 @@ func DecodeImage(buf []byte) (*Image, error) {
 
 	// read header (18 bytes)
 	i.ID = binary.LittleEndian.Uint64(buf[:8])
-	i.Type = buf[9]
-	i.Flags = buf[10]
+	i.Type = buf[8]
+	i.Flags = buf[9]
 	i.Width = binary.LittleEndian.Uint32(buf[10:14])
 	i.Height = binary.LittleEndian.Uint32(buf[14:18])
 
