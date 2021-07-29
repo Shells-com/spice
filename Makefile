@@ -12,4 +12,4 @@ deps:
 	$(GOROOT)/bin/go get -v -t .
 
 test:
-	$(GOROOT)/bin/go test -v
+	$(GOROOT)/bin/go test -v ./...
