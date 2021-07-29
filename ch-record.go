@@ -4,17 +4,17 @@ import (
 	"log"
 )
 
-type SpiceRecord struct {
+type ChRecord struct {
 	cl   *Client
 	conn *SpiceConn
 }
 
-func (cl *Client) setupRecord(id uint8) (*SpiceRecord, error) {
+func (cl *Client) setupRecord(id uint8) (*ChRecord, error) {
 	conn, err := cl.conn(ChannelRecord, id, nil)
 	if err != nil {
 		return nil, err
 	}
-	m := &SpiceRecord{cl: cl, conn: conn}
+	m := &ChRecord{cl: cl, conn: conn}
 	conn.hndlr = m.handle
 
 	go m.conn.ReadLoop()
@@ -22,7 +22,7 @@ func (cl *Client) setupRecord(id uint8) (*SpiceRecord, error) {
 	return m, nil
 }
 
-func (d *SpiceRecord) handle(typ uint16, data []byte) {
+func (d *ChRecord) handle(typ uint16, data []byte) {
 	switch typ {
 	default:
 		log.Printf("spice/record: got message type=%d", typ)

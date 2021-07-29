@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 	"log"
 
-	"github.com/hraban/opus"
 	"github.com/gordonklaus/portaudio"
+	"github.com/hraban/opus"
 )
 
 const (

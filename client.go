@@ -36,6 +36,7 @@ type Client struct {
 
 	main     *ChMain
 	playback *ChPlayback
+	record   *ChRecord
 
 	mmTime  uint32    // mmTime as of start
 	mmStamp time.Time // mmStamp is the time at which mmTime was set
@@ -91,7 +92,7 @@ func New(c Connector, driver Driver, password string) (*Client, error) {
 			wg.Add(1)
 			go func(id uint8) {
 				defer wg.Done()
-				cl.setupRecord(id)
+				cl.record, _ = cl.setupRecord(id)
 			}(ch.id)
 		case ChannelWebdav:
 			wg.Add(1)
