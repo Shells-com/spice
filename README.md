@@ -13,8 +13,8 @@ Features:
 * [x] Mouse and keyboard control (client mode)
 * [x] Audio playback
 * [x] Clipboard
+* [x] Audio recording
 * [ ] USB Support
-* [ ] Audio recording
 * [ ] File transfer
 * [ ] Video streaming
 
