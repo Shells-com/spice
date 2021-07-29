@@ -137,7 +137,7 @@ func (d *ChPlayback) handle(typ uint16, data []byte) {
 		}
 
 		d.buf = make([]int16, 25*channels*freq/1000) // 48000kHz 2channels = 10*2*48000/1000 = 480
-		stream, err := portaudio.OpenDefaultStream(0, int(channels), float64(freq), len(d.buf), &d.buf)
+		stream, err := portaudio.OpenDefaultStream(0, int(channels), float64(freq), len(d.buf)/int(channels), &d.buf)
 		if err != nil {
 			log.Printf("spice/playback: failed to initialize output: %s", err)
 			return
