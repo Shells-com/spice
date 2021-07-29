@@ -8,6 +8,7 @@ import (
 	"image"
 	"image/draw"
 	"image/jpeg"
+	"io"
 
 	"github.com/Shells-com/spice/quic"
 )
@@ -24,6 +25,10 @@ type Image struct {
 
 func DecodeImage(buf []byte) (*Image, error) {
 	i := &Image{}
+
+	if len(buf) < 18 {
+		return nil, io.ErrUnexpectedEOF
+	}
 
 	// read header (18 bytes)
 	i.ID = binary.LittleEndian.Uint64(buf[:8])
