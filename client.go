@@ -42,22 +42,23 @@ type Driver interface {
 // Client represents a SPICE protocol client connection
 // It manages all channel connections and coordinates communication
 type Client struct {
-	c        Connector     // Network connection provider
-	driver   Driver        // Implementation for handling display/input
-	password string        // Password for SPICE authentication
-	session  uint32        // SPICE connection ID
-	displays uint32        // Number of displays available
-	Debug    *log.Logger   // Optional logger for debug information
+	c        Connector   // Network connection provider
+	driver   Driver      // Implementation for handling display/input
+	password string      // Password for SPICE authentication
+	session  uint32      // SPICE connection ID
+	displays uint32      // Number of displays available
+	Debug    *log.Logger // Optional logger for debug information
 
 	// Channel handlers for different SPICE channels
-	main     *ChMain       // Main channel for connection management
-	playback *ChPlayback   // Audio playback channel
-	record   *ChRecord     // Audio recording channel
+	main     *ChMain      // Main channel for connection management
+	playback *ChPlayback  // Audio playback channel
+	record   *ChRecord    // Audio recording channel
+	webdav   *SpiceWebdav // WebDAV channel for file transfers
 
 	// Media time synchronization
-	mmTime  uint32         // Media time in milliseconds from server
-	mmStamp time.Time      // Local timestamp when mmTime was received
-	mmLock  sync.RWMutex   // Lock for media time access
+	mmTime  uint32       // Media time in milliseconds from server
+	mmStamp time.Time    // Local timestamp when mmTime was received
+	mmLock  sync.RWMutex // Lock for media time access
 }
 
 // New creates a new SPICE client and establishes connection to all available channels
@@ -118,7 +119,7 @@ func New(c Connector, driver Driver, password string) (*Client, error) {
 			wg.Add(1)
 			go func(id uint8) {
 				defer wg.Done()
-				cl.setupWebdav(id)
+				cl.webdav, _ = cl.setupWebdav(id)
 			}(ch.id)
 		case ChannelUsbRedir:
 			log.Printf("spice: USB supported, device #%d", ch.id)
@@ -185,4 +186,9 @@ func (client *Client) SetMute(muted bool) {
 
 func (client *Client) GetMute() bool {
 	return client.playback.mute
+}
+
+// GetFileTransfer returns the WebDAV file transfer interface if available
+func (client *Client) GetFileTransfer() *SpiceWebdav {
+	return client.webdav
 }

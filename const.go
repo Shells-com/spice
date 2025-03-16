@@ -43,6 +43,14 @@ const (
 	SPICE_COMMON_CAP_MINI_HEADER             = 3
 )
 
+// WebDAV message types
+const (
+	SPICE_WEBDAV_MSG_INVALID          = 0
+	SPICE_WEBDAV_MSG_FILE_XFER_START  = 1
+	SPICE_WEBDAV_MSG_FILE_XFER_DATA   = 2
+	SPICE_WEBDAV_MSG_FILE_XFER_STATUS = 3
+)
+
 type LzImageType uint32
 
 const (
