@@ -1,3 +1,5 @@
+// Package spice implements a client for the SPICE remote desktop protocol
+// commonly used with QEMU and libvirt virtualization systems.
 package spice
 
 import (
@@ -8,51 +10,69 @@ import (
 	"time"
 )
 
-// SpiceConnector is a type of object that can create connections to a spice server
+// Connector is an interface that can establish network connections to a SPICE server
+// with optional compression for the display channel
 type Connector interface {
 	SpiceConnect(compress bool) (net.Conn, error)
 }
 
+// Driver is the interface that must be implemented by clients to handle
+// display updates, input events, cursor changes and clipboard operations
 type Driver interface {
+	// DisplayInit initializes the display with the given image
 	DisplayInit(image.Image)
+	// DisplayRefresh triggers a refresh of the display
 	DisplayRefresh()
+	// SetEventsTarget sets the input events channel for sending user input
 	SetEventsTarget(*ChInputs)
+	// SetMainTarget sets the main channel for server communication
 	SetMainTarget(*ChMain)
+	// SetCursor updates the cursor image and position
 	SetCursor(img image.Image, x, y uint16)
 
-	// clipboard related
+	// Clipboard related methods
+	// ClipboardGrabbed is called when the server grabs the clipboard
 	ClipboardGrabbed(selection SpiceClipboardSelection, clipboardTypes []SpiceClipboardFormat)
+	// ClipboardFetch retrieves clipboard data from the client
 	ClipboardFetch(selection SpiceClipboardSelection, clType SpiceClipboardFormat) ([]byte, error)
+	// ClipboardRelease is called when the server releases the clipboard
 	ClipboardRelease(selection SpiceClipboardSelection)
 }
 
+// Client represents a SPICE protocol client connection
+// It manages all channel connections and coordinates communication
 type Client struct {
-	c        Connector
-	driver   Driver
-	password string
-	session  uint32 // connection_id
-	displays uint32 // number of displays
-	Debug    *log.Logger
+	c        Connector     // Network connection provider
+	driver   Driver        // Implementation for handling display/input
+	password string        // Password for SPICE authentication
+	session  uint32        // SPICE connection ID
+	displays uint32        // Number of displays available
+	Debug    *log.Logger   // Optional logger for debug information
 
-	main     *ChMain
-	playback *ChPlayback
-	record   *ChRecord
+	// Channel handlers for different SPICE channels
+	main     *ChMain       // Main channel for connection management
+	playback *ChPlayback   // Audio playback channel
+	record   *ChRecord     // Audio recording channel
 
-	mmTime  uint32    // mmTime as of start
-	mmStamp time.Time // mmStamp is the time at which mmTime was set
-	mmLock  sync.RWMutex
+	// Media time synchronization
+	mmTime  uint32         // Media time in milliseconds from server
+	mmStamp time.Time      // Local timestamp when mmTime was received
+	mmLock  sync.RWMutex   // Lock for media time access
 }
 
+// New creates a new SPICE client and establishes connection to all available channels
+// It requires a Connector for network access, a Driver for GUI interaction,
+// and the password for SPICE authentication
 func New(c Connector, driver Driver, password string) (*Client, error) {
 	cl := &Client{c: c, driver: driver, password: password}
 
-	// connection has been established
+	// First establish the main channel connection
 	err := cl.setupMain()
 	if err != nil {
 		return nil, err
 	}
 
-	// connect channels
+	// Connect to all available channels in parallel
 	var wg sync.WaitGroup
 	for _, ch := range cl.main.channels {
 		switch ch.typ {
@@ -102,7 +122,7 @@ func New(c Connector, driver Driver, password string) (*Client, error) {
 			}(ch.id)
 		case ChannelUsbRedir:
 			log.Printf("spice: USB supported, device #%d", ch.id)
-			// do nothing, this is useful elsewhere
+			// Do nothing - USB support is not yet implemented
 		default:
 			log.Printf("spice: could not connect to channel %s[%d]: unknown type", ch.typ, ch.id)
 		}

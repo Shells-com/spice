@@ -1,3 +1,5 @@
+// Package spice implements a client for the SPICE remote desktop protocol
+// This file implements the display channel handling image rendering and updates
 package spice
 
 import (
@@ -85,40 +87,51 @@ const (
 	SPICE_IMAGE_COMPRESSION_LZ4
 )
 
+// SpiceDisplay handles the display channel for rendering remote desktop content
+// It processes drawing commands and updates the local display image
 type SpiceDisplay struct {
-	cl   *Client
-	conn *SpiceConn
+	cl      *Client    // Reference to parent client
+	conn    *SpiceConn // Connection to display channel
 
-	display draw.Image
+	display draw.Image // Current display image buffer
 }
 
+// setupDisplay establishes a connection to the display channel and initializes it
+// It advertises supported capabilities and compression preferences to the server
 func (cl *Client) setupDisplay(id uint8) (*SpiceDisplay, error) {
+	// Connect to display channel with specific capabilities
 	conn, err := cl.conn(ChannelDisplay, id, caps(
-		SPICE_DISPLAY_CAP_SIZED_STREAM,
-		SPICE_DISPLAY_CAP_STREAM_REPORT,
-		SPICE_DISPLAY_CAP_MONITORS_CONFIG,
-		SPICE_DISPLAY_CAP_MULTI_CODEC,
-		SPICE_DISPLAY_CAP_LZ4_COMPRESSION,
-		SPICE_DISPLAY_CAP_PREF_COMPRESSION,
+		SPICE_DISPLAY_CAP_SIZED_STREAM,    // Support sized stream messages
+		SPICE_DISPLAY_CAP_STREAM_REPORT,   // Support stream reporting
+		SPICE_DISPLAY_CAP_MONITORS_CONFIG, // Support monitor configuration
+		SPICE_DISPLAY_CAP_MULTI_CODEC,     // Support multiple video codecs
+		SPICE_DISPLAY_CAP_LZ4_COMPRESSION, // Support LZ4 compression
+		SPICE_DISPLAY_CAP_PREF_COMPRESSION, // Support setting preferred compression
 	))
 	if err != nil {
 		return nil, err
 	}
+
+	// Create display handler and set message callback
 	m := &SpiceDisplay{cl: cl, conn: conn}
 	conn.hndlr = m.handle
 
+	// Start message processing loop in background
 	go m.conn.ReadLoop()
 
-	// enable image caching and global dictionary compression
+	// Enable image caching and global dictionary compression
+	// The 14 bytes are for cache parameters (all zeros = default values)
 	m.conn.WriteMessage(SPICE_MSGC_DISPLAY_INIT, make([]byte, 14))
 
-	// say we like LZ
+	// Set LZ compression as preferred compression method
 	m.conn.WriteMessage(SPICE_MSGC_DISPLAY_PREFERRED_COMPRESSION, []byte{SPICE_IMAGE_COMPRESSION_AUTO_LZ})
 
-	// say we like MJPEG & VP8
-	// SPICE_MSGC_DISPLAY_PREFERRED_VIDEO_CODEC_TYPE
+	// Set preferred video codecs (VP8 and MJPEG)
 	// 1=MJPEG 2=VP8 3=H264 4=VP9 5=H265
-	m.conn.WriteMessage(SPICE_MSGC_DISPLAY_PREFERRED_VIDEO_CODEC_TYPE, uint8(2), uint8(1), uint8(2))
+	m.conn.WriteMessage(SPICE_MSGC_DISPLAY_PREFERRED_VIDEO_CODEC_TYPE, 
+		uint8(2), // Number of codecs
+		uint8(1), // MJPEG
+		uint8(2)) // VP8
 
 	return m, nil
 }

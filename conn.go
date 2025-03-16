@@ -1,3 +1,5 @@
+// Package spice implements a client for the SPICE remote desktop protocol
+// This file implements the core connection handling and protocol-level operations
 package spice
 
 import (
@@ -16,36 +18,44 @@ import (
 	"sync/atomic"
 )
 
+// SpiceConn represents a connection to a specific SPICE channel
+// It handles the protocol-level communication including message framing,
+// authentication, and capability negotiation
 type SpiceConn struct {
-	client *Client
-	conn   net.Conn
-	serial uint64
-	wLock  sync.Mutex
-	hndlr  func(typ uint16, data []byte)
-	pub    *rsa.PublicKey
-	typ    Channel
-	id     uint8
+	client *Client      // Reference to the parent client
+	conn   net.Conn     // Underlying network connection
+	serial uint64       // Serial counter for outgoing messages
+	wLock  sync.Mutex   // Lock for writing to conn
+	hndlr  func(typ uint16, data []byte) // Message handler callback
+	pub    *rsa.PublicKey // Server's public key for authentication
+	typ    Channel      // Channel type (main, display, inputs, etc.)
+	id     uint8        // Channel ID
 
-	// negociated protocol version
-	major uint32
-	minor uint32
+	// Negotiated protocol version
+	major uint32        // Major version
+	minor uint32        // Minor version
 
-	commonCaps  []uint32
-	channelCaps []uint32
-	validCaps   []uint32
+	// Capability negotiation
+	commonCaps  []uint32 // Common capabilities from server
+	channelCaps []uint32 // Channel-specific capabilities from server
+	validCaps   []uint32 // Negotiated capabilities (intersection)
 
-	miniHeaders bool
+	miniHeaders bool    // Whether to use mini-headers (optimization)
 
-	ackW uint32     // ack window, send acknowledgment for every “window” messages
-	ackP uint32     // ack position, once it's == ackW, send ack.
-	ackL sync.Mutex // lock for ack
+	// Message acknowledgment
+	ackW uint32     // Ack window: send acknowledgment every "window" messages
+	ackP uint32     // Ack position: when it reaches ackW, send ack
+	ackL sync.Mutex // Lock for acknowledgment variables
 }
 
+// ReadLoop continuously reads and processes incoming messages from the SPICE server
+// It handles message acknowledgment according to the server's requirements
+// and dispatches messages to the appropriate handlers
 func (c *SpiceConn) ReadLoop() {
-	// read packets as long as we can
+	// Read packets until an error occurs (typically connection closed)
 	for {
 		err := c.ReadData(func(typ uint16, data []byte) error {
-			// this might need to be moved after process?
+			// Handle acknowledgment according to the ack window
 			doAck := false
 			c.ackL.Lock()
 			if c.ackW > 0 {
@@ -58,17 +68,17 @@ func (c *SpiceConn) ReadLoop() {
 			c.ackL.Unlock()
 
 			if doAck {
-				// send ack
+				// Send acknowledgment message
 				c.WriteMessage(SPICE_MSGC_ACK)
 			}
 
+			// Process the received message
 			return c.process(typ, data)
 		})
 		if err != nil {
 			log.Printf("spice: read failed: %s", err)
 			return
 		}
-
 	}
 }
 
