@@ -22,25 +22,25 @@ import (
 // It handles the protocol-level communication including message framing,
 // authentication, and capability negotiation
 type SpiceConn struct {
-	client *Client      // Reference to the parent client
-	conn   net.Conn     // Underlying network connection
-	serial uint64       // Serial counter for outgoing messages
-	wLock  sync.Mutex   // Lock for writing to conn
+	client *Client                       // Reference to the parent client
+	conn   net.Conn                      // Underlying network connection
+	serial uint64                        // Serial counter for outgoing messages
+	wLock  sync.Mutex                    // Lock for writing to conn
 	hndlr  func(typ uint16, data []byte) // Message handler callback
-	pub    *rsa.PublicKey // Server's public key for authentication
-	typ    Channel      // Channel type (main, display, inputs, etc.)
-	id     uint8        // Channel ID
+	pub    *rsa.PublicKey                // Server's public key for authentication
+	typ    Channel                       // Channel type (main, display, inputs, etc.)
+	id     uint8                         // Channel ID
 
 	// Negotiated protocol version
-	major uint32        // Major version
-	minor uint32        // Minor version
+	major uint32 // Major version
+	minor uint32 // Minor version
 
 	// Capability negotiation
 	commonCaps  []uint32 // Common capabilities from server
 	channelCaps []uint32 // Channel-specific capabilities from server
 	validCaps   []uint32 // Negotiated capabilities (intersection)
 
-	miniHeaders bool    // Whether to use mini-headers (optimization)
+	miniHeaders bool // Whether to use mini-headers (optimization)
 
 	// Message acknowledgment
 	ackW uint32     // Ack window: send acknowledgment every "window" messages

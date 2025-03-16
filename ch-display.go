@@ -90,8 +90,8 @@ const (
 // SpiceDisplay handles the display channel for rendering remote desktop content
 // It processes drawing commands and updates the local display image
 type SpiceDisplay struct {
-	cl      *Client    // Reference to parent client
-	conn    *SpiceConn // Connection to display channel
+	cl   *Client    // Reference to parent client
+	conn *SpiceConn // Connection to display channel
 
 	display draw.Image // Current display image buffer
 }
@@ -101,11 +101,11 @@ type SpiceDisplay struct {
 func (cl *Client) setupDisplay(id uint8) (*SpiceDisplay, error) {
 	// Connect to display channel with specific capabilities
 	conn, err := cl.conn(ChannelDisplay, id, caps(
-		SPICE_DISPLAY_CAP_SIZED_STREAM,    // Support sized stream messages
-		SPICE_DISPLAY_CAP_STREAM_REPORT,   // Support stream reporting
-		SPICE_DISPLAY_CAP_MONITORS_CONFIG, // Support monitor configuration
-		SPICE_DISPLAY_CAP_MULTI_CODEC,     // Support multiple video codecs
-		SPICE_DISPLAY_CAP_LZ4_COMPRESSION, // Support LZ4 compression
+		SPICE_DISPLAY_CAP_SIZED_STREAM,     // Support sized stream messages
+		SPICE_DISPLAY_CAP_STREAM_REPORT,    // Support stream reporting
+		SPICE_DISPLAY_CAP_MONITORS_CONFIG,  // Support monitor configuration
+		SPICE_DISPLAY_CAP_MULTI_CODEC,      // Support multiple video codecs
+		SPICE_DISPLAY_CAP_LZ4_COMPRESSION,  // Support LZ4 compression
 		SPICE_DISPLAY_CAP_PREF_COMPRESSION, // Support setting preferred compression
 	))
 	if err != nil {
@@ -128,7 +128,7 @@ func (cl *Client) setupDisplay(id uint8) (*SpiceDisplay, error) {
 
 	// Set preferred video codecs (VP8 and MJPEG)
 	// 1=MJPEG 2=VP8 3=H264 4=VP9 5=H265
-	m.conn.WriteMessage(SPICE_MSGC_DISPLAY_PREFERRED_VIDEO_CODEC_TYPE, 
+	m.conn.WriteMessage(SPICE_MSGC_DISPLAY_PREFERRED_VIDEO_CODEC_TYPE,
 		uint8(2), // Number of codecs
 		uint8(1), // MJPEG
 		uint8(2)) // VP8

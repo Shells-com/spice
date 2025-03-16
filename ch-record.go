@@ -14,17 +14,17 @@ import (
 // ChRecord handles the audio recording channel for capturing audio from the client
 // and sending it to the SPICE server
 type ChRecord struct {
-	cl      *Client           // Reference to the parent client
-	conn    *SpiceConn        // Connection to record channel
+	cl   *Client    // Reference to the parent client
+	conn *SpiceConn // Connection to record channel
 
-	mode     uint16           // Audio encoding mode (1=raw, 3=opus)
-	channels uint32           // Number of audio channels
-	format   uint16           // Audio format (1=16-bit signed PCM)
-	freq     uint32           // Sample rate in Hz
+	mode     uint16            // Audio encoding mode (1=raw, 3=opus)
+	channels uint32            // Number of audio channels
+	format   uint16            // Audio format (1=16-bit signed PCM)
+	freq     uint32            // Sample rate in Hz
 	stream   *portaudio.Stream // Audio input stream
-	pcm      []int16          // PCM buffer for audio data (16-bit signed)
-	enc      *opus.Encoder    // Opus encoder for audio compression
-	run      uint32           // Atomic flag to control recording state
+	pcm      []int16           // PCM buffer for audio data (16-bit signed)
+	enc      *opus.Encoder     // Opus encoder for audio compression
+	run      uint32            // Atomic flag to control recording state
 }
 
 const (
@@ -53,7 +53,7 @@ func (cl *Client) setupRecord(id uint8) (*ChRecord, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Create record handler and set message callback
 	m := &ChRecord{cl: cl, conn: conn}
 	conn.hndlr = m.handle
@@ -112,7 +112,7 @@ func (d *ChRecord) handle(typ uint16, data []byte) {
 
 		// Create PCM buffer (10ms of audio data)
 		d.pcm = make([]int16, 10*channels*freq/1000) // e.g., 48000Hz, 2channels = 10*2*48000/1000 = 960 samples
-		
+
 		// Open audio input stream (channels input, 0 output)
 		stream, err := portaudio.OpenDefaultStream(int(channels), 0, float64(freq), len(d.pcm)/int(channels), &d.pcm)
 		if err != nil {
@@ -141,26 +141,26 @@ func (d *ChRecord) handle(typ uint16, data []byte) {
 				return
 			}
 		}
-		
+
 		// Start background goroutine for capturing and sending audio data
 		go d.startRecord()
-		
+
 	case SPICE_MSG_RECORD_STOP:
 		// Signal recording to stop by clearing the run flag
 		log.Printf("spice/record: stopping recording")
 		atomic.StoreUint32(&d.run, 0)
-		
+
 	case SPICE_MSG_RECORD_VOLUME:
 		// Parse volume settings for each channel
 		if len(data) < 1 {
 			return
 		}
-		cnt := int(data[0])    // Number of channels
+		cnt := int(data[0]) // Number of channels
 		data = data[1:]
 		if len(data) != cnt*2 {
 			return // Invalid data length
 		}
-		
+
 		// Extract volume level for each channel
 		vol := make([]uint16, cnt)
 		for n := 0; n < cnt; n++ {
@@ -168,14 +168,14 @@ func (d *ChRecord) handle(typ uint16, data []byte) {
 			data = data[2:]
 		}
 		log.Printf("spice/record: volume information: %v", vol)
-		
+
 	case SPICE_MSG_RECORD_MUTE:
 		// Parse mute status
 		if len(data) < 1 {
 			return
 		}
 		log.Printf("spice/record: mute information: %d", data[0])
-		
+
 	default:
 		log.Printf("spice/record: got message type=%d", typ)
 	}
@@ -185,7 +185,7 @@ func (d *ChRecord) handle(typ uint16, data []byte) {
 // encodes it, and sends it to the SPICE server
 func (d *ChRecord) startRecord() {
 	defer d.stream.Stop()
-	
+
 	// Allocate buffer for encoded audio data
 	buf := make([]byte, 512)
 
@@ -200,14 +200,14 @@ func (d *ChRecord) startRecord() {
 			log.Printf("spice/record: failed to read audio: %s", err)
 			return
 		}
-		
+
 		// Encode PCM data using Opus encoder
 		n, err := d.enc.Encode(d.pcm, buf)
 		if err != nil {
 			log.Printf("spice/record: failed PCM Opus encoding: %s", err)
 			return
 		}
-		
+
 		// Send encoded audio data to server with current media time
 		d.conn.WriteMessage(SPICE_MSGC_RECORD_DATA, d.cl.MediaTime(), buf[:n])
 
