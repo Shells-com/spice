@@ -45,18 +45,26 @@ func bitmapImage(data []byte) (image.Image, error) {
 	//log.Printf("bitmap image, size=%dx%d stride=%d flags=%d format=%d palId=%d palPtr=%d len=%d", width, height, stride, flags, format, palId, palPtr, len(data))
 	_, _ = palId, palPtr
 
-	// TODO fix BITMAP_IMAGE_TYPE_32BIT
 	switch format {
 	case BITMAP_IMAGE_TYPE_32BIT, BITMAP_IMAGE_TYPE_RGBA:
-		// easy enough
 		ln := int(height * stride)
 		if len(data) < ln {
 			return nil, errors.New("not enough data for image")
 		}
-		img := &image.RGBA{Pix: data[:ln], Stride: int(stride), Rect: image.Rect(0, 0, int(width), int(height))}
+
+		// QEMU sends bitmap data in BGRX format, need to convert to RGBA
+		pixData := make([]byte, ln)
+		for i := 0; i < ln; i += 4 {
+			pixData[i+0] = data[i+2] // R from B
+			pixData[i+1] = data[i+1] // G stays
+			pixData[i+2] = data[i+0] // B from R
+			pixData[i+3] = 0xff      // A (opaque)
+		}
+
+		img := &image.RGBA{Pix: pixData, Stride: int(stride), Rect: image.Rect(0, 0, int(width), int(height))}
 
 		if flags&4 == 0 {
-			// reverse image
+			// reverse image (flip vertically)
 			reverseImgRGBA(img)
 		}
 		return img, nil
