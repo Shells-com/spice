@@ -74,6 +74,7 @@ const (
 	SPICE_DISPLAY_CAP_PREF_VIDEO_CODEC_TYPE // X
 	SPICE_DISPLAY_CAP_CODEC_VP9
 	SPICE_DISPLAY_CAP_CODEC_H265
+	SPICE_DISPLAY_CAP_GL_SCANOUT2
 )
 
 const (
@@ -104,7 +105,6 @@ func (cl *Client) setupDisplay(id uint8) (*SpiceDisplay, error) {
 		SPICE_DISPLAY_CAP_SIZED_STREAM,     // Support sized stream messages
 		SPICE_DISPLAY_CAP_STREAM_REPORT,    // Support stream reporting
 		SPICE_DISPLAY_CAP_MONITORS_CONFIG,  // Support monitor configuration
-		SPICE_DISPLAY_CAP_MULTI_CODEC,      // Support multiple video codecs
 		SPICE_DISPLAY_CAP_LZ4_COMPRESSION,  // Support LZ4 compression
 		SPICE_DISPLAY_CAP_PREF_COMPRESSION, // Support setting preferred compression
 	))
