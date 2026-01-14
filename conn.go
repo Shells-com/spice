@@ -454,9 +454,3 @@ func (c *SpiceConn) readSpiceLinkReply() error {
 func (c *SpiceConn) Close() error {
 	return c.conn.Close()
 }
-
-func (c *SpiceConn) writeLoop(ch chan *spicePacket) {
-	for pkt := range ch {
-		c.WriteMessage(pkt.typ, pkt.data...)
-	}
-}

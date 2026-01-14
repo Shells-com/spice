@@ -311,8 +311,8 @@ func (ctx *internal) quic_rgb32_uncompress_row(prev_row, cur_row []byte) error {
 	return nil
 }
 
-func (this *internal) quic_rgb32_uncompress_row_seg(i uint32, prev_row, cur_row []byte, end, bpc, bpc_mask uint32) error {
-	var waitmask = bppmask[this.rgb_state.wmidx]
+func (ctx *internal) quic_rgb32_uncompress_row_seg(i uint32, prev_row, cur_row []byte, end, bpc, bpc_mask uint32) error {
+	var waitmask = bppmask[ctx.rgb_state.wmidx]
 
 	var run_index, stopidx, run_end uint32
 	var c uint32
@@ -321,26 +321,26 @@ func (this *internal) quic_rgb32_uncompress_row_seg(i uint32, prev_row, cur_row 
 	if i == 0 {
 		cur_row[rgb32_pixel_pad] = 0xff
 
-		for c = 0; c < this.nChan; c += 1 {
-			rc, cwlen := family_8bpc.golombDecoding(this.channels[c].buckets_ptrs[this.channels[c].correlate_row_zero].bestcode, this.io_word)
-			this.channels[c].correlate_row[0] = rc
-			cur_row[c] = byte((family_8bpc.xlatL2U[this.channels[c].correlate_row[0]] + uint32(prev_row[c])) & bpc_mask)
-			this.eatbits(cwlen)
+		for c = 0; c < ctx.nChan; c += 1 {
+			rc, cwlen := family_8bpc.golombDecoding(ctx.channels[c].buckets_ptrs[ctx.channels[c].correlate_row_zero].bestcode, ctx.io_word)
+			ctx.channels[c].correlate_row[0] = rc
+			cur_row[c] = byte((family_8bpc.xlatL2U[ctx.channels[c].correlate_row[0]] + uint32(prev_row[c])) & bpc_mask)
+			ctx.eatbits(cwlen)
 		}
 
-		if this.rgb_state.waitcnt != 0 {
-			this.rgb_state.waitcnt -= 1
+		if ctx.rgb_state.waitcnt != 0 {
+			ctx.rgb_state.waitcnt -= 1
 		} else {
-			this.rgb_state.waitcnt = this.rgb_state.tabrand() & waitmask
+			ctx.rgb_state.waitcnt = ctx.rgb_state.tabrand() & waitmask
 			c = 0
-			for c = 0; c < this.nChan; c += 1 {
-				this.channels[c].buckets_ptrs[this.channels[c].correlate_row_zero].updateModel(family_8bpc, this.rgb_state, uint32(this.channels[c].correlate_row[0]), bpc)
+			for c = 0; c < ctx.nChan; c += 1 {
+				ctx.channels[c].buckets_ptrs[ctx.channels[c].correlate_row_zero].updateModel(family_8bpc, ctx.rgb_state, uint32(ctx.channels[c].correlate_row[0]), bpc)
 			}
 		}
 		i += 1
-		stopidx = i + this.rgb_state.waitcnt
+		stopidx = i + ctx.rgb_state.waitcnt
 	} else {
-		stopidx = i + this.rgb_state.waitcnt
+		stopidx = i + ctx.rgb_state.waitcnt
 	}
 	for {
 		var rc = false
@@ -353,9 +353,9 @@ func (this *internal) quic_rgb32_uncompress_row_seg(i uint32, prev_row, cur_row 
 				if prev_row[pixelm1+rgb32_pixel_r] == prev_row[pixel+rgb32_pixel_r] && prev_row[pixelm1+rgb32_pixel_g] == prev_row[pixel+rgb32_pixel_g] && prev_row[pixelm1+rgb32_pixel_b] == prev_row[pixel+rgb32_pixel_b] {
 					if run_index != i && i > 2 && (cur_row[pixelm1+rgb32_pixel_r] == cur_row[pixelm2+rgb32_pixel_r] && cur_row[pixelm1+rgb32_pixel_g] == cur_row[pixelm2+rgb32_pixel_g] && cur_row[pixelm1+rgb32_pixel_b] == cur_row[pixelm2+rgb32_pixel_b]) {
 						/* do run */
-						this.rgb_state.waitcnt = stopidx - i
+						ctx.rgb_state.waitcnt = stopidx - i
 						run_index = i
-						run_end, err = this.decode_run(this.rgb_state)
+						run_end, err = ctx.decode_run(ctx.rgb_state)
 						if err != nil {
 							return err
 						}
@@ -373,7 +373,7 @@ func (this *internal) quic_rgb32_uncompress_row_seg(i uint32, prev_row, cur_row 
 						if i == end {
 							return nil
 						} else {
-							stopidx = i + this.rgb_state.waitcnt
+							stopidx = i + ctx.rgb_state.waitcnt
 							rc = true
 							break
 						}
@@ -382,14 +382,14 @@ func (this *internal) quic_rgb32_uncompress_row_seg(i uint32, prev_row, cur_row 
 
 				c = 0
 				cur_row[pixel+rgb32_pixel_pad] = 0xff
-				for c = 0; c < this.nChan; c += 1 {
-					var cc = this.channels[c]
+				for c = 0; c < ctx.nChan; c += 1 {
+					var cc = ctx.channels[c]
 					var cr = cc.correlate_row
 
-					rc, cwlen := family_8bpc.golombDecoding(cc.buckets_ptrs[cr[i-1]].bestcode, this.io_word)
+					rc, cwlen := family_8bpc.golombDecoding(cc.buckets_ptrs[cr[i-1]].bestcode, ctx.io_word)
 					cr[i] = rc
 					cur_row[pixel+c] = byte((family_8bpc.xlatL2U[rc] + ((uint32(cur_row[pixelm1+c]) + uint32(prev_row[pixel+c])) >> 1)) & bpc_mask)
-					this.eatbits(cwlen)
+					ctx.eatbits(cwlen)
 				}
 			}
 			if rc {
@@ -397,11 +397,11 @@ func (this *internal) quic_rgb32_uncompress_row_seg(i uint32, prev_row, cur_row 
 			}
 
 			c = 0
-			for c = 0; c < this.nChan; c += 1 {
-				this.channels[c].buckets_ptrs[this.channels[c].correlate_row[stopidx-1]].updateModel(family_8bpc, this.rgb_state, uint32(this.channels[c].correlate_row[stopidx]), bpc)
+			for c = 0; c < ctx.nChan; c += 1 {
+				ctx.channels[c].buckets_ptrs[ctx.channels[c].correlate_row[stopidx-1]].updateModel(family_8bpc, ctx.rgb_state, uint32(ctx.channels[c].correlate_row[stopidx]), bpc)
 			}
 
-			stopidx = i + (this.rgb_state.tabrand() & waitmask)
+			stopidx = i + (ctx.rgb_state.tabrand() & waitmask)
 		}
 
 		for ; i < end && !rc; i++ {
@@ -412,9 +412,9 @@ func (this *internal) quic_rgb32_uncompress_row_seg(i uint32, prev_row, cur_row 
 			if prev_row[pixelm1+rgb32_pixel_r] == prev_row[pixel+rgb32_pixel_r] && prev_row[pixelm1+rgb32_pixel_g] == prev_row[pixel+rgb32_pixel_g] && prev_row[pixelm1+rgb32_pixel_b] == prev_row[pixel+rgb32_pixel_b] {
 				if run_index != i && i > 2 && (cur_row[pixelm1+rgb32_pixel_r] == cur_row[pixelm2+rgb32_pixel_r] && cur_row[pixelm1+rgb32_pixel_g] == cur_row[pixelm2+rgb32_pixel_g] && cur_row[pixelm1+rgb32_pixel_b] == cur_row[pixelm2+rgb32_pixel_b]) {
 					/* do run */
-					this.rgb_state.waitcnt = stopidx - i
+					ctx.rgb_state.waitcnt = stopidx - i
 					run_index = i
-					run_end, err = this.decode_run(this.rgb_state)
+					run_end, err = ctx.decode_run(ctx.rgb_state)
 					if err != nil {
 						return err
 					}
@@ -432,7 +432,7 @@ func (this *internal) quic_rgb32_uncompress_row_seg(i uint32, prev_row, cur_row 
 					if i == end {
 						return nil
 					} else {
-						stopidx = i + this.rgb_state.waitcnt
+						stopidx = i + ctx.rgb_state.waitcnt
 						rc = true
 						break
 					}
@@ -442,16 +442,16 @@ func (this *internal) quic_rgb32_uncompress_row_seg(i uint32, prev_row, cur_row 
 			cur_row[pixel+rgb32_pixel_pad] = 0xff
 			c = 0
 
-			for c = 0; c < this.nChan; c += 1 {
-				rc, cwlen := family_8bpc.golombDecoding(this.channels[c].buckets_ptrs[this.channels[c].correlate_row[i-1]].bestcode, this.io_word)
-				this.channels[c].correlate_row[i] = rc
+			for c = 0; c < ctx.nChan; c += 1 {
+				rc, cwlen := family_8bpc.golombDecoding(ctx.channels[c].buckets_ptrs[ctx.channels[c].correlate_row[i-1]].bestcode, ctx.io_word)
+				ctx.channels[c].correlate_row[i] = rc
 				cur_row[pixel+c] = byte((family_8bpc.xlatL2U[rc] + ((uint32(cur_row[pixelm1+c]) + uint32(prev_row[pixel+c])) >> 1)) & bpc_mask)
-				this.eatbits(cwlen)
+				ctx.eatbits(cwlen)
 			}
 		}
 
 		if !rc {
-			this.rgb_state.waitcnt = stopidx - end
+			ctx.rgb_state.waitcnt = stopidx - end
 			return nil
 		}
 	}

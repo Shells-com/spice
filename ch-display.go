@@ -258,7 +258,7 @@ func (d *SpiceDisplay) handleDrawFill(req []byte) {
 	qmask.Decode(r)
 
 	if qmask.ImagePtr != 0 {
-		qmask.Image, err = DecodeImage(req[qmask.ImagePtr:])
+		qmask.Image, _ = DecodeImage(req[qmask.ImagePtr:])
 	}
 
 	// Apply COLOR
@@ -304,7 +304,7 @@ func (d *SpiceDisplay) handleDrawCopy(req []byte) {
 	qmask.Decode(r)
 
 	if qmask.ImagePtr != 0 {
-		qmask.Image, err = DecodeImage(req[qmask.ImagePtr:])
+		qmask.Image, _ = DecodeImage(req[qmask.ImagePtr:])
 	}
 
 	// decode image

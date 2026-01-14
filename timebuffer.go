@@ -118,10 +118,7 @@ func (b *timeBuffer) runner() {
 		b.release(t)
 
 		if t == nil {
-			select {
-			case <-b.ping:
-				// cause refresh
-			}
+			<-b.ping // cause refresh
 		} else {
 			select {
 			case <-b.ping:

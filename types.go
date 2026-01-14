@@ -69,8 +69,3 @@ const (
 	ImageScaleModeInterpolate ImageScaleMode = iota
 	ImageScaleModeNearest
 )
-
-type spicePacket struct {
-	typ  uint16
-	data []interface{}
-}

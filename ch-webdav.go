@@ -347,7 +347,7 @@ func (d *SpiceWebdav) SendFiles(filePaths []string, callback FileTransferCallbac
 			}
 			errMsg.WriteString(err.Error())
 		}
-		return ids, fmt.Errorf(errMsg.String())
+		return ids, fmt.Errorf("%s", errMsg.String())
 	}
 
 	return ids, nil
