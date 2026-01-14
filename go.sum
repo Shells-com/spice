@@ -1,7 +1,3 @@
-github.com/KarpelesLab/static-opus v0.3.131 h1:nxbTIpPijjot5QmX+5n6C1NLQNxCIxCAuDqyyt0ivIk=
-github.com/KarpelesLab/static-opus v0.3.131/go.mod h1:imuTrncTHBbXQoleH8j32Li//haNTz8N7S95RiTkP6g=
-github.com/KarpelesLab/static-portaudio v0.4.190600 h1:y+wZ2jHuxklHUzjet9lq3Tv/0g4j+Ghq1wTM1Qse6Zs=
-github.com/KarpelesLab/static-portaudio v0.4.190600/go.mod h1:gJo/PfziOxbetHg+KzbgFMZeKy57tGRrsuwqfOtQ5/c=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gordonklaus/portaudio v0.0.0-20200911161147-bb74aa485641 h1:B7ADnac3Yy6Vtcp2mstnsjUtarYcjy4AL0R6eNEhZAk=
